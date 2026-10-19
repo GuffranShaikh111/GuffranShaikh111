@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error - ASD{% endblock %}
+
+{% block content %}
+<div class="page-container fade-in">
+    <div class="error-page">
+        <div class="error-content">
+            <img src="https://img.icons8.com/fluency/128/error.png" alt="500" class="error-icon">
+            <h1 class="error-title">500</h1>
+            <h2 class="error-subtitle">Internal Server Error</h2>
+            <p class="error-message">Something went wrong on our end. Please try again later.</p>
+            <div class="error-actions">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                    <img src="https://img.icons8.com/fluency/20/home.png" alt="home">
+                    Go to Dashboard
+                </a>
+                <button class="btn btn-outline" onclick="window.location.reload()">
+                    <img src="https://img.icons8.com/fluency/20/refresh.png" alt="refresh">
+                    Try Again
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

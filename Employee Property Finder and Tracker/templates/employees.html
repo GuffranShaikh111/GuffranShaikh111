@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block title %}Employees - ASD{% endblock %}
+
+{% block content %}
+<div class="page-container fade-in">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Employees</h1>
+            <p class="page-subtitle">Manage your organization's workforce</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('addEmployeeModal')">
+            <img src="https://img.icons8.com/fluency/20/add-user-male.png" alt="add">
+            Add Employee
+        </button>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="filter-section">
+        <form method="GET" class="filter-form">
+            <div class="search-box">
+                <img src="https://img.icons8.com/fluency/20/search.png" alt="search" class="search-icon">
+                <input type="text" name="search" placeholder="Search by name, ID, or email..." 
+                       value="{{ search_query }}" class="search-input">
+            </div>
+            <select name="department" class="filter-select" onchange="this.form.submit()">
+                <option value="">All Departments</option>
+                <option value="IT" {% if department_filter == 'IT' %}selected{% endif %}>IT</option>
+                <option value="HR" {% if department_filter == 'HR' %}selected{% endif %}>Human Resources</option>
+                <option value="Marketing" {% if department_filter == 'Marketing' %}selected{% endif %}>Marketing</option>
+                <option value="Finance" {% if department_filter == 'Finance' %}selected{% endif %}>Finance</option>
+                <option value="Operations" {% if department_filter == 'Operations' %}selected{% endif %}>Operations</option>
+                <option value="Sales" {% if department_filter == 'Sales' %}selected{% endif %}>Sales</option>
+                <option value="Engineering" {% if department_filter == 'Engineering' %}selected{% endif %}>Engineering</option>
+                <option value="Administration" {% if department_filter == 'Administration' %}selected{% endif %}>Administration</option>
+            </select>
+            <button type="submit" class="btn btn-outline">
+                <img src="https://img.icons8.com/fluency/20/filter.png" alt="filter">
+                Filter
+            </button>
+            {% if search_query or department_filter %}
+            <a href="{{ url_for('employees') }}" class="btn btn-ghost">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Employees Grid -->
+    {% if employees %}
+    <div class="cards-grid">
+        {% for employee in employees %}
+        <div class="employee-card slide-up" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+            <div class="employee-card-header">
+                <img src="https://img.icons8.com/fluency/64/user-male-circle.png" alt="employee" class="employee-avatar">
+                <span class="badge badge-{{ 'success' if employee.is_active else 'secondary' }}">
+                    {{ 'Active' if employee.is_active else 'Inactive' }}
+                </span>
+            </div>
+            <div class="employee-card-body">
+                <h3 class="employee-name">{{ employee.name }}</h3>
+                <p class="employee-id">{{ employee.employee_id }}</p>
+                <div class="employee-details">
+                    <div class="detail-item">
+                        <img src="https://img.icons8.com/fluency/16/organization.png" alt="dept">
+                        <span>{{ employee.department }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <img src="https://img.icons8.com/fluency/16/email.png" alt="email">
+                        <span>{{ employee.email }}</span>
+                    </div>
+                    {% if employee.phone %}
+                    <div class="detail-item">
+                        <img src="https://img.icons8.com/fluency/16/phone.png" alt="phone">
+                        <span>{{ employee.phone }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="employee-assets">
+                    <img src="https://img.icons8.com/fluency/20/laptop.png" alt="assets">
+                    <span>{{ employee.asset_count }} Assets Assigned</span>
+                </div>
+            </div>
+            <div class="employee-card-footer">
+                <button class="btn btn-sm btn-outline" onclick="editEmployee('{{ employee._id }}')">
+                    <img src="https://img.icons8.com/fluency/16/edit.png" alt="edit">
+                    Edit
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteEmployee('{{ employee._id }}', '{{ employee.name }}')">
+                    <img src="https://img.icons8.com/fluency/16/delete.png" alt="delete">
+                    Delete
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <img src="https://img.icons8.com/fluency/128/nothing-found.png" alt="empty">
+        <h3>No Employees Found</h3>
+        <p>Start by adding your first employee to the system</p>
+        <button class="btn btn-primary" onclick="openModal('addEmployeeModal')">
+            <img src="https://img.icons8.com/fluency/20/add-user-male.png" alt="add">
+            Add Employee
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add Employee Modal -->
+<div id="addEmployeeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Add New Employee</h2>
+            <button class="modal-close" onclick="closeModal('addEmployeeModal')">&times;</button>
+        </div>
+        <form method="POST" action="{{ url_for('add_employee') }}" class="modal-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% if form is defined and form.errors %}
+            <div class="alert alert-danger">
+                <strong>Please fix the following errors:</strong>
+                <ul>
+                    {% for field, errors in form.errors.items() %}
+                        {% for error in errors %}
+                            <li>{{ field }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Department</label>
+                    <select name="department" class="form-control" required>
+                        <option value="">Select Department</option>
+                        <option value="IT">IT</option>
+                        <option value="HR">Human Resources</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Operations">Operations</option>
+                        <option value="Sales">Sales</option>
+                        <option value="Engineering">Engineering</option>
+                        <option value="Administration">Administration</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="text" name="phone" class="form-control">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" name="confirm_password" class="form-control" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeModal('addEmployeeModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <img src="https://img.icons8.com/fluency/20/save.png" alt="save">
+                    Save Employee
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Employee Modal -->
+<div id="editEmployeeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Edit Employee</h2>
+            <button class="modal-close" onclick="closeModal('editEmployeeModal')">&times;</button>
+        </div>
+        <form id="editEmployeeForm" method="POST" class="modal-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% if form is defined and form.errors %}
+            <div class="alert alert-danger">
+                <strong>Please fix the following errors:</strong>
+                <ul>
+                    {% for field, errors in form.errors.items() %}
+                        {% for error in errors %}
+                            <li>{{ field }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Employee ID</label>
+                    <input type="text" name="employee_id" id="edit_employee_id" class="form-control" required readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="name" id="edit_name" class="form-control" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" id="edit_email" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="text" name="phone" id="edit_phone" class="form-control">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Department</label>
+                    <select name="department" id="edit_department" class="form-control" required>
+                        <option value="IT">IT</option>
+                        <option value="HR">Human Resources</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Operations">Operations</option>
+                        <option value="Sales">Sales</option>
+                        <option value="Engineering">Engineering</option>
+                        <option value="Administration">Administration</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">New Password (Optional)</label>
+                    <input type="password" name="password" class="form-control" placeholder="Leave blank to keep current password">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm New Password</label>
+                    <input type="password" name="confirm_password" class="form-control">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeModal('editEmployeeModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <img src="https://img.icons8.com/fluency/20/save.png" alt="save">
+                    Update Employee
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function editEmployee(employeeId) {
+    fetch(`/employees/edit/${employeeId}`)
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            // This is a simplified version - in production, use an API endpoint
+            openModal('editEmployeeModal');
+            document.getElementById('editEmployeeForm').action = `/employees/edit/${employeeId}`;
+        });
+}
+
+function deleteEmployee(employeeId, employeeName) {
+    if (confirm(`Are you sure you want to delete ${employeeName}?`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/employees/delete/${employeeId}`;
+        
+        const csrfToken = document.querySelector('[name="csrf_token"]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

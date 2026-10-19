@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Assets - ASD{% endblock %}
+
+{% block content %}
+<div class="page-container fade-in">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Assets</h1>
+            <p class="page-subtitle">Track and manage company assets</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('addAssetModal')">
+            <img src="https://img.icons8.com/fluency/20/add.png" alt="add">
+            Add Asset
+        </button>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="filter-section">
+        <form method="GET" class="filter-form">
+            <div class="search-box">
+                <img src="https://img.icons8.com/fluency/20/search.png" alt="search" class="search-icon">
+                <input type="text" name="search" placeholder="Search by brand, model, or serial number..." 
+                       value="{{ search_query }}" class="search-input">
+            </div>
+            <select name="asset_type" class="filter-select" onchange="this.form.submit()">
+                <option value="">All Types</option>
+                <option value="Laptop" {% if asset_type_filter == 'Laptop' %}selected{% endif %}>Laptop</option>
+                <option value="Desktop" {% if asset_type_filter == 'Desktop' %}selected{% endif %}>Desktop</option>
+                <option value="Mobile Phone" {% if asset_type_filter == 'Mobile Phone' %}selected{% endif %}>Mobile Phone</option>
+                <option value="Tablet" {% if asset_type_filter == 'Tablet' %}selected{% endif %}>Tablet</option>
+                <option value="Monitor" {% if asset_type_filter == 'Monitor' %}selected{% endif %}>Monitor</option>
+                <option value="Other" {% if asset_type_filter == 'Other' %}selected{% endif %}>Other</option>
+            </select>
+            <select name="status" class="filter-select" onchange="this.form.submit()">
+                <option value="">All Status</option>
+                <option value="Available" {% if status_filter == 'Available' %}selected{% endif %}>Available</option>
+                <option value="Assigned" {% if status_filter == 'Assigned' %}selected{% endif %}>Assigned</option>
+            </select>
+            <button type="submit" class="btn btn-outline">
+                <img src="https://img.icons8.com/fluency/20/filter.png" alt="filter">
+                Filter
+            </button>
+            {% if search_query or asset_type_filter or status_filter %}
+            <a href="{{ url_for('assets') }}" class="btn btn-ghost">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Assets Grid -->
+    {% if assets %}
+    <div class="cards-grid">
+        {% for asset in assets %}
+        <div class="asset-card slide-up" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+            <div class="asset-card-header">
+                {% if asset.asset_type == 'Laptop' %}
+                <img src="https://img.icons8.com/fluency/64/laptop.png" alt="laptop" class="asset-icon">
+                {% elif asset.asset_type == 'Desktop' %}
+                <img src="https://img.icons8.com/fluency/64/imac.png" alt="desktop" class="asset-icon">
+                {% elif asset.asset_type == 'Mobile Phone' %}
+                <img src="https://img.icons8.com/fluency/64/iphone.png" alt="phone" class="asset-icon">
+                {% elif asset.asset_type == 'Tablet' %}
+                <img src="https://img.icons8.com/fluency/64/ipad.png" alt="tablet" class="asset-icon">
+                {% elif asset.asset_type == 'Monitor' %}
+                <img src="https://img.icons8.com/fluency/64/monitor.png" alt="monitor" class="asset-icon">
+                {% else %}
+                <img src="https://img.icons8.com/fluency/64/box.png" alt="asset" class="asset-icon">
+                {% endif %}
+                <span class="badge badge-{{ 'success' if asset.status == 'Available' else 'warning' }}">
+                    {{ asset.status }}
+                </span>
+            </div>
+            <div class="asset-card-body">
+                <h3 class="asset-name">{{ asset.brand }} {{ asset.model }}</h3>
+                <p class="asset-type">{{ asset.asset_type }}</p>
+                <div class="asset-details">
+                    <div class="detail-item">
+                        <img src="https://img.icons8.com/fluency/16/barcode.png" alt="serial">
+                        <span>{{ asset.serial_number }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <img src="https://img.icons8.com/fluency/16/settings.png" alt="condition">
+                        <span>Condition: {{ asset.condition }}</span>
+                    </div>
+                    {% if asset.description %}
+                    <div class="detail-item">
+                        <img src="https://img.icons8.com/fluency/16/info.png" alt="info">
+                        <span>{{ asset.description[:50] }}{% if asset.description|length > 50 %}...{% endif %}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="asset-card-footer">
+                <button class="btn btn-sm btn-outline" onclick="editAsset('{{ asset._id }}')">
+                    <img src="https://img.icons8.com/fluency/16/edit.png" alt="edit">
+                    Edit
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteAsset('{{ asset._id }}', '{{ asset.brand }} {{ asset.model }}')">
+                    <img src="https://img.icons8.com/fluency/16/delete.png" alt="delete">
+                    Delete
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <img src="https://img.icons8.com/fluency/128/nothing-found.png" alt="empty">
+        <h3>No Assets Found</h3>
+        <p>Start by adding your first asset to the inventory</p>
+        <button class="btn btn-primary" onclick="openModal('addAssetModal')">
+            <img src="https://img.icons8.com/fluency/20/add.png" alt="add">
+            Add Asset
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add Asset Modal -->
+<div id="addAssetModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Add New Asset</h2>
+            <button class="modal-close" onclick="closeModal('addAssetModal')">&times;</button>
+        </div>
+        <form method="POST" action="{{ url_for('add_asset') }}" class="modal-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Asset Type</label>
+                    <select name="asset_type" class="form-control" required>
+                        <option value="">Select Type</option>
+                        <option value="Laptop">Laptop</option>
+                        <option value="Desktop">Desktop</option>
+                        <option value="Mobile Phone">Mobile Phone</option>
+                        <option value="Tablet">Tablet</option>
+                        <option value="Monitor">Monitor</option>
+                        <option value="Keyboard">Keyboard</option>
+                        <option value="Mouse">Mouse</option>
+                        <option value="Headset">Headset</option>
+                        <option value="ID Card">ID Card</option>
+                        <option value="Access Card">Access Card</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Brand</label>
+                    <input type="text" name="brand" class="form-control" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Model</label>
+                    <input type="text" name="model" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Serial Number</label>
+                    <input type="text" name="serial_number" class="form-control" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Condition</label>
+                    <select name="condition" class="form-control" required>
+                        <option value="New">New</option>
+                        <option value="Good">Good</option>
+                        <option value="Fair">Fair</option>
+                        <option value="Poor">Poor</option>
+                        <option value="Damaged">Damaged</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description (Optional)</label>
+                <textarea name="description" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeModal('addAssetModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <img src="https://img.icons8.com/fluency/20/save.png" alt="save">
+                    Save Asset
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function editAsset(assetId) {
+    window.location.href = `/assets/edit/${assetId}`;
+}
+
+function deleteAsset(assetId, assetName) {
+    if (confirm(`Are you sure you want to delete ${assetName}?`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/assets/delete/${assetId}`;
+        
+        const csrfToken = document.querySelector('[name="csrf_token"]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}
