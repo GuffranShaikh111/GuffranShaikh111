@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Candidate Dashboard</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='style.css') }}">
+
+<style>
+
+.top-bar{
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    margin-bottom:30px;
+}
+
+.logout-btn{
+
+    background:#ff4d4d;
+    padding:12px 20px;
+    border-radius:10px;
+    color:white;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+.logout-btn:hover{
+    transform:scale(1.03);
+}
+
+.profile-section{
+
+    background:rgba(255,255,255,0.15);
+
+    padding:25px;
+
+    border-radius:15px;
+
+    margin-bottom:25px;
+}
+
+.profile-section h2{
+    color:white;
+    margin-bottom:15px;
+}
+
+.profile-section p{
+    color:#f5f5f5;
+    margin-bottom:10px;
+    line-height:1.6;
+}
+
+.dashboard-buttons{
+    margin-top:20px;
+}
+
+.dashboard-buttons a{
+    margin-right:15px;
+}
+
+.applied-box{
+
+    background:rgba(255,255,255,0.12);
+
+    padding:25px;
+
+    border-radius:15px;
+
+    margin-top:20px;
+}
+
+.applied-box h2{
+    color:white;
+    margin-bottom:15px;
+}
+
+.applied-box p{
+    color:#f5f5f5;
+    margin-bottom:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="top-bar">
+
+<div>
+
+<h1>Candidate Dashboard</h1>
+
+<p class="subtitle">
+Welcome {{ username }}
+</p>
+
+</div>
+
+<a href="/logout" class="logout-btn">
+Logout
+</a>
+
+</div>
+
+<div class="profile-section">
+
+<h2>Candidate Profile</h2>
+
+<p>
+Your Smart Job Portal profile has been created successfully.
+</p>
+
+<p>
+You can browse jobs, upload resumes and apply for jobs.
+</p>
+
+<p>
+Future Enhancements:
+Interview scheduling, recruiter dashboard,
+application tracking and notifications.
+</p>
+
+<div class="dashboard-buttons">
+
+<a href="/jobs">
+Browse Jobs
+</a>
+
+</div>
+
+</div>
+
+<div class="applied-box">
+
+<h2>Application Activity</h2>
+
+<p>
+✔ Profile Created Successfully
+</p>
+
+<p>
+✔ Account Login Active
+</p>
+
+<p>
+✔ Resume Upload Enabled
+</p>
+
+<p>
+✔ Job Application System Connected
+</p>
+
+<p>
+Applied jobs will appear here in future enhancement.
+</p>
+
+</div>
+
+</div>
+
+</body>
+</html>

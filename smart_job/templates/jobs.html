@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Available Jobs</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Available Jobs</h1>
+
+<p class="subtitle">
+Explore top opportunities and apply with your resume
+</p>
+
+{% for job in jobs %}
+
+<div class="card">
+
+<h2>{{ job[1] }}</h2>
+
+<p><b>Company:</b> {{ job[2] }}</p>
+
+<p><b>Location:</b> {{ job[3] }}</p>
+
+<p><b>Salary:</b> {{ job[4] }}</p>
+
+<p><b>Experience:</b> {{ job[5] }}</p>
+
+<p><b>Qualification:</b> {{ job[6] }}</p>
+
+<p><b>Requirements:</b> {{ job[7] }}</p>
+
+<form method="POST" enctype="multipart/form-data">
+
+<input type="hidden"
+name="job_id"
+value="{{ job[0] }}">
+
+<div class="file-box">
+
+<label>Upload Resume/CV</label>
+
+<input type="file"
+name="resume"
+required>
+
+</div>
+
+<button type="submit">
+Apply Now
+</button>
+
+</form>
+
+</div>
+
+{% endfor %}
+
+<div class="top-buttons">
+
+<a href="/dashboard">Dashboard</a>
+
+<a href="/logout">Logout</a>
+
+</div>
+
+</div>
+
+</body>
+</html>
