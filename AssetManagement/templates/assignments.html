@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}Assignments - ASD{% endblock %}
+
+{% block content %}
+<div class="page-container fade-in">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Asset Assignments</h1>
+            <p class="page-subtitle">Track asset allocation to employees</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('addAssignmentModal')">
+            <img src="https://img.icons8.com/fluency/20/assign-user.png" alt="assign">
+            New Assignment
+        </button>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="tabs">
+        <a href="?status=Active" class="tab {% if status_filter == 'Active' %}active{% endif %}">
+            <img src="https://img.icons8.com/fluency/20/checked.png" alt="active">
+            Active
+        </a>
+        <a href="?status=Pending" class="tab {% if status_filter == 'Pending' %}active{% endif %}">
+            <img src="https://img.icons8.com/fluency/20/clock.png" alt="pending">
+            Pending Approval
+        </a>
+        <a href="?status=Returned" class="tab {% if status_filter == 'Returned' %}active{% endif %}">
+            <img src="https://img.icons8.com/fluency/20/return.png" alt="returned">
+            Returned
+        </a>
+        <a href="?status=Rejected" class="tab {% if status_filter == 'Rejected' %}active{% endif %}">
+            <img src="https://img.icons8.com/fluency/20/cancel.png" alt="rejected">
+            Rejected
+        </a>
+    </div>
+
+    <!-- Assignments List -->
+    {% if assignments %}
+    <div class="assignments-list">
+        {% for assignment in assignments %}
+        <div class="assignment-card slide-up" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+            <div class="assignment-header">
+                <div class="assignment-user">
+                    <img src="https://img.icons8.com/fluency/48/user-male-circle.png" alt="user" class="assignment-avatar">
+                    <div>
+                        <h3 class="assignment-name">{{ assignment.employee.name if assignment.employee else 'Unknown' }}</h3>
+                        <p class="assignment-id">{{ assignment.employee.employee_id if assignment.employee else 'N/A' }}</p>
+                    </div>
+                </div>
+                <span class="badge badge-{{ 'success' if assignment.status == 'Active' else 'warning' if assignment.approval_status == 'Pending' else 'danger' if assignment.approval_status == 'Rejected' else 'secondary' }}">
+                    {% if assignment.approval_status == 'Pending' %}
+                        Pending Approval
+                    {% elif assignment.approval_status == 'Rejected' %}
+                        Rejected
+                    {% else %}
+                        {{ assignment.status }}
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="assignment-body">
+                <div class="assignment-asset">
+                    {% if assignment.asset %}
+                    <div class="asset-info">
+                        {% if assignment.asset.asset_type == 'Laptop' %}
+                        <img src="https://img.icons8.com/fluency/32/laptop.png" alt="laptop">
+                        {% elif assignment.asset.asset_type == 'Desktop' %}
+                        <img src="https://img.icons8.com/fluency/32/imac.png" alt="desktop">
+                        {% elif assignment.asset.asset_type == 'Mobile Phone' %}
+                        <img src="https://img.icons8.com/fluency/32/iphone.png" alt="phone">
+                        {% else %}
+                        <img src="https://img.icons8.com/fluency/32/box.png" alt="asset">
+                        {% endif %}
+                        <div>
+                            <h4>{{ assignment.asset.brand }} {{ assignment.asset.model }}</h4>
+                            <p>{{ assignment.asset.asset_type }} • {{ assignment.asset.serial_number }}</p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Asset not found</p>
+                    {% endif %}
+                </div>
+                
+                <div class="assignment-details">
+                    <div class="detail-row">
+                        <div class="detail-item">
+                            <img src="https://img.icons8.com/fluency/16/calendar.png" alt="date">
+                            <span>Assigned: {{ assignment.assigned_date.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <img src="https://img.icons8.com/fluency/16/user.png" alt="by">
+                            <span>By: {{ assignment.assigned_by }}</span>
+                        </div>
+                    </div>
+                    
+                    {% if assignment.expected_return_date %}
+                    <div class="detail-row">
+                        <div class="detail-item">
+                            <img src="https://img.icons8.com/fluency/16/clock.png" alt="expected">
+                            <span>Expected Return: {{ assignment.expected_return_date.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if assignment.actual_return_date %}
+                    <div class="detail-row">
+                        <div class="detail-item">
+                            <img src="https://img.icons8.com/fluency/16/return.png" alt="returned">
+                            <span>Returned: {{ assignment.actual_return_date.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <img src="https://img.icons8.com/fluency/16/settings.png" alt="condition">
+                            <span>Condition: {{ assignment.return_condition }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if assignment.notes %}
+                    <div class="detail-row">
+                        <div class="detail-item full-width">
+                            <img src="https://img.icons8.com/fluency/16/note.png" alt="notes">
+                            <span>{{ assignment.notes }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if assignment.status == 'Active' %}
+            <div class="assignment-footer">
+                <button class="btn btn-sm btn-primary" onclick="openReturnModal('{{ assignment._id }}')">
+                    <img src="https://img.icons8.com/fluency/16/return.png" alt="return">
+                    Return Asset
+                </button>
+            </div>
+            {% elif assignment.approval_status == 'Pending' %}
+            <div class="assignment-footer">
+                <button class="btn btn-sm btn-success" onclick="approveAssignment('{{ assignment._id }}')">
+                    <img src="https://img.icons8.com/fluency/16/checkmark.png" alt="approve">
+                    Approve
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="rejectAssignment('{{ assignment._id }}')">
+                    <img src="https://img.icons8.com/fluency/16/cancel.png" alt="reject">
+                    Reject
+                </button>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <img src="https://img.icons8.com/fluency/128/nothing-found.png" alt="empty">
+        <h3>No Assignments Found</h3>
+        <p>No {{ status_filter.lower() if status_filter else '' }} assignments available</p>
+        <button class="btn btn-primary" onclick="openModal('addAssignmentModal')">
+            <img src="https://img.icons8.com/fluency/20/assign-user.png" alt="assign">
+            Create Assignment
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add Assignment Modal -->
+<div id="addAssignmentModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">New Asset Assignment</h2>
+            <button class="modal-close" onclick="closeModal('addAssignmentModal')">&times;</button>
+        </div>
+        <form method="POST" action="{{ url_for('add_assignment') }}" class="modal-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+                <label class="form-label">Select Employee</label>
+                <select name="employee_id" class="form-control" required>
+                    <option value="">Choose an employee...</option>
+                    {% for choice in form.employee_id.choices if form %}
+                    <option value="{{ choice[0] }}">{{ choice[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Select Asset</label>
+                <select name="asset_id" class="form-control" required>
+                    <option value="">Choose an available asset...</option>
+                    {% for choice in form.asset_id.choices if form %}
+                    <option value="{{ choice[0] }}">{{ choice[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Expected Return Date (Optional)</label>
+                <input type="date" name="expected_return_date" class="form-control">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Notes (Optional)</label>
+                <textarea name="notes" class="form-control" rows="3" placeholder="Any additional notes..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeModal('addAssignmentModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <img src="https://img.icons8.com/fluency/20/save.png" alt="save">
+                    Create Assignment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Return Asset Modal -->
+<div id="returnAssetModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Return Asset</h2>
+            <button class="modal-close" onclick="closeModal('returnAssetModal')">&times;</button>
+        </div>
+        <form id="returnAssetForm" method="POST" class="modal-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+                <label class="form-label">Return Condition</label>
+                <select name="return_condition" class="form-control" required>
+                    <option value="">Select condition...</option>
+                    <option value="Good">Good</option>
+                    <option value="Fair">Fair</option>
+                    <option value="Poor">Poor</option>
+                    <option value="Damaged">Damaged</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Notes (Optional)</label>
+                <textarea name="notes" class="form-control" rows="3" placeholder="Any observations or issues..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeModal('returnAssetModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <img src="https://img.icons8.com/fluency/20/return.png" alt="return">
+                    Return Asset
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openReturnModal(assignmentId) {
+    document.getElementById('returnAssetForm').action = `/assignments/return/${assignmentId}`;
+    openModal('returnAssetModal');
+}
+
+function approveAssignment(assignmentId) {
+    if (confirm('Are you sure you want to approve this asset assignment?')) {
+        fetch(`/assignments/admin-approve/${assignmentId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ action: 'approve' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while processing the request.');
+        });
+    }
+}
+
+function rejectAssignment(assignmentId) {
+    const reason = prompt('Please provide a reason for rejection:');
+    if (reason !== null && reason.trim() !== '') {
+        fetch(`/assignments/admin-approve/${assignmentId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ 
+                action: 'reject',
+                rejection_reason: reason.trim()
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while processing the request.');
+        });
+    }
+}
+</script>
+{% endblock %}

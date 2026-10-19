@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ASD - Asset Management System{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="nav-title">Assets Dairy</span>
+            </div>
+            
+            <ul class="nav-menu" id="navMenu">
+                <li class="nav-item">
+                    <a href="{{ url_for('home') }}" class="nav-link {% if request.endpoint == 'home' %}active{% endif %}">
+                        <img src="https://img.icons8.com/fluency/24/home.png" alt="home" class="nav-icon">
+                        Home
+                    </a>
+                </li>
+                
+                {% if session.get('user_id') %}
+                <li class="nav-item">
+                    <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                        <img src="https://img.icons8.com/fluency/24/dashboard.png" alt="dashboard" class="nav-icon">
+                        Dashboard
+                    </a>
+                </li>
+                
+                {% if session.get('role') == 'admin' %}
+                <!-- Admin Navigation -->
+                <li class="nav-item">
+                    <a href="{{ url_for('employees') }}" class="nav-link {% if request.endpoint and 'employee' in request.endpoint %}active{% endif %}">
+                        <img src="https://img.icons8.com/fluency/24/user-group-man-man.png" alt="employees" class="nav-icon">
+                        Employees
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('assets') }}" class="nav-link {% if request.endpoint and 'asset' in request.endpoint %}active{% endif %}">
+                        <img src="https://img.icons8.com/fluency/24/laptop.png" alt="assets" class="nav-icon">
+                        Assets
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('assignments') }}" class="nav-link {% if request.endpoint and 'assignment' in request.endpoint %}active{% endif %}">
+                        <img src="https://img.icons8.com/fluency/24/assign-user.png" alt="assignments" class="nav-icon">
+                        Assignments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('reports') }}" class="nav-link {% if request.endpoint == 'reports' %}active{% endif %}">
+                        <img src="https://img.icons8.com/fluency/24/analytical.png" alt="reports" class="nav-icon">
+                        Reports
+                    </a>
+                </li>
+                {% endif %}
+                {% endif %}
+            </ul>
+            
+            <div class="nav-actions">
+                {% if session.get('user_id') %}
+                <div class="user-dropdown">
+                    <button class="user-button" id="userButton">
+                        <img src="https://img.icons8.com/fluency/32/user-male-circle.png" alt="user" class="user-avatar">
+                        <span class="user-name">{{ session.get('full_name') }}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <div class="dropdown-header">
+                            <p class="dropdown-user-name">{{ session.get('full_name') }}</p>
+                            <p class="dropdown-username">@{{ session.get('username') }}</p>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="{{ url_for('logout') }}" class="dropdown-item">
+                            <img src="https://img.icons8.com/fluency/20/exit.png" alt="logout">
+                            Logout
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-outline">Login</a>
+                {% endif %}
+                
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-container">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} fade-in">
+                <span class="alert-icon">
+                    {% if category == 'success' %}
+                    <i class="fas fa-check-circle"></i>
+                    {% elif category == 'danger' %}
+                    <i class="fas fa-exclamation-circle"></i>
+                    {% elif category == 'warning' %}
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {% else %}
+                    <i class="fas fa-info-circle"></i>
+                    {% endif %}
+                </span>
+                <span class="alert-message">{{ message }}</span>
+                <button class="alert-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

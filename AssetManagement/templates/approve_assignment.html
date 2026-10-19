@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Approve Assignment - ASD{% endblock %}
+
+{% block content %}
+<div class="page-container fade-in">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Approve Asset Assignment</h1>
+            <p class="page-subtitle">Review and approve or reject the asset assignment request</p>
+        </div>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline">
+            <img src="https://img.icons8.com/fluency/20/back.png" alt="back">
+            Back to Dashboard
+        </a>
+    </div>
+
+    <div class="assignment-details-card">
+        <div class="assignment-header">
+            <div class="asset-info">
+                <img src="https://img.icons8.com/fluency/48/laptop.png" alt="asset" class="asset-icon">
+                <div>
+                    <h3>{{ assignment.asset.brand }} {{ assignment.asset.model }}</h3>
+                    <p class="asset-meta">{{ assignment.asset.asset_type }} • Serial: {{ assignment.asset.serial_number }}</p>
+                </div>
+            </div>
+            <div class="assignment-meta">
+                <div class="meta-item">
+                    <img src="https://img.icons8.com/fluency/20/calendar.png" alt="date">
+                    <span>Requested: {{ assignment.assigned_date.strftime('%B %d, %Y') }}</span>
+                </div>
+                {% if assignment.expected_return_date %}
+                <div class="meta-item">
+                    <img src="https://img.icons8.com/fluency/20/return.png" alt="return">
+                    <span>Expected Return: {{ assignment.expected_return_date.strftime('%B %d, %Y') }}</span>
+                </div>
+                {% endif %}
+                {% if assignment.notes %}
+                <div class="meta-item">
+                    <img src="https://img.icons8.com/fluency/20/note.png" alt="notes">
+                    <span>{{ assignment.notes }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <form method="POST" class="approval-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="form-section">
+                <h4>Your Decision</h4>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="action" value="approve" checked>
+                        <span class="radio-checkmark"></span>
+                        <div class="radio-content">
+                            <img src="https://img.icons8.com/fluency/24/checkmark.png" alt="approve">
+                            <div>
+                                <strong>Approve Assignment</strong>
+                                <p>Accept this asset assignment</p>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <label class="radio-label">
+                        <input type="radio" name="action" value="reject">
+                        <span class="radio-checkmark"></span>
+                        <div class="radio-content">
+                            <img src="https://img.icons8.com/fluency/24/cancel.png" alt="reject">
+                            <div>
+                                <strong>Reject Assignment</strong>
+                                <p>Decline this asset assignment</p>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+                
+                <div class="rejection-reason" id="rejectionReason" style="display: none;">
+                    <label class="form-label">Reason for Rejection (Optional)</label>
+                    <textarea name="rejection_reason" class="form-control" rows="3" placeholder="Please provide a reason for rejecting this assignment..."></textarea>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-ghost">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <img src="https://img.icons8.com/fluency/20/save.png" alt="submit">
+                    Submit Decision
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('input[name="action"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const rejectionReason = document.getElementById('rejectionReason');
+        if (this.value === 'reject') {
+            rejectionReason.style.display = 'block';
+        } else {
+            rejectionReason.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}
