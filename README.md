@@ -86,7 +86,7 @@ A web-based application designed to manage employee assets, equipment assignment
 
 **Technologies:** Python, Flask, MySQL, HTML, CSS, JavaScript
 
-🔗 [View Project Repository](https://github.com/GuffranShaikh111/employee-property-finder-and-tracker)
+🔗 [View Project Repository](https://github.com/GuffranShaikh111/Employee-Property-Finder-and-Tracker)
 
 ### 🏨 Lodging Management System
 
