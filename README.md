@@ -129,7 +129,7 @@ An application designed to simplify lodging operations and organize lodging-rela
 
 <p align="center">
   <a href="https://github.com/GuffranShaikh111">GitHub</a> •
-  <a href="www.linkedin.com/in/shaikh-mohammed-guffran-30b04a306">LinkedIn</a> •
+  <a href="https://www.linkedin.com/in/shaikh-mohammed-guffran-30b04a306/" target="_blank" rel="noopener noreferrer">LinkedIn</a> •
   <a href="mailto:guffranshaikh111@gmail.com">Email Me</a>
 </p>
 
